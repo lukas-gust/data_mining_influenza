@@ -1,6 +1,9 @@
 #gzip
 *.gz
 
+*.fna
+*.faa
+
 #pycahrm
 .idea/
 
