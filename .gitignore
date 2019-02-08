@@ -1,3 +1,6 @@
+#gzip
+*.gz
+
 #pycahrm
 .idea/
 
