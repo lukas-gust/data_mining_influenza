@@ -37,8 +37,10 @@ class sequence:
 
     def get_dataframe(self):
         _seq = pd.DataFrame.from_dict(self.seq, orient='index', columns=['Sequence'])
-        # TODO still need more work on parsing the meta data into proper columns
-        _meta = pd.DataFrame.from_dict(self.meta, orient='index', columns=['Details'])
+        meta_type = []
+        for detail in self.meta.values():
+            meta_type.append(detail.split('|')[-1])
+        _meta = pd.DataFrame(index=self.meta, data=meta_type, columns=['Details'])
         return _meta, _seq
 
 
