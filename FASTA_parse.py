@@ -1,8 +1,9 @@
 #!user/bin/python3
-import pickle
 import gzip
-import pandas as pd
+import pickle
 
+import numpy as np
+import pandas as pd
 
 ftp_addr = "ftp.ncbi.nih.gov"
 
@@ -23,24 +24,30 @@ class sequence:
 
     def update(self, line):
         if line[0] == '>':
+            newline = line.replace('>', '')
             self.length += 1
             if self._current_key:
                 self.seq[self._current_key] = "".join(self._seqbuild)
             self._seqbuild = []
-            metadata = line.split('|', maxsplit=2)
-            self._current_key = int(metadata[1])
-            values = metadata[2]
-            if self._current_key not in self.meta: # TODO make sure we are not loosing information
+            metadata = newline.split('|', maxsplit=2)
+            self._current_key = "".join(metadata[:2])
+            values = newline
+            if self._current_key not in self.meta:  # TODO make sure we are not loosing information
                 self.meta[self._current_key] = values
         else:
             self._seqbuild.append(line)
 
     def get_dataframe(self):
         _seq = pd.DataFrame.from_dict(self.seq, orient='index', columns=['Sequence'])
-        meta_type = []
-        for detail in self.meta.values():
-            meta_type.append(detail.split('|')[-1])
-        _meta = pd.DataFrame(index=self.meta, data=meta_type, columns=['Details'])
+        new_cols = []
+
+        for i, detail in enumerate(self.meta.values()):
+            spl = detail.split('|')
+            new_cols.append(np.array([spl[0], spl[1], spl[2], spl[3], spl[4]], dtype='str'))
+
+        _meta = pd.DataFrame(data=np.array(new_cols), index=self.meta,
+                             columns=['NCBI_1', 'Key_1', 'NCBI_2', 'Key_2', 'Details'])
+        _meta = _meta.astype(dtype='float', errors='ignore')
         return _meta, _seq
 
 
@@ -68,5 +75,5 @@ def _main():
             print('failed')
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     _main()
