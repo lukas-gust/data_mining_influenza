@@ -5,8 +5,6 @@ import pickle
 import numpy as np
 import pandas as pd
 
-ftp_addr = "ftp.ncbi.nih.gov"
-
 
 class sequence:
     def __init__(self):
