@@ -160,6 +160,8 @@ rownames(uniflna_test2_cmp) <- colnames(uniflna_test2_cmp)
 # add gene column
 uniflna_test2_wgs <- uniflna_test2_cmp
 uniflna_test2_wgs$gene <- uniflna_test2$gene
+uniflna_test2_wgs$type <- uniflna_test2$type
+uniflna_test2_wgs$HNtype <- uniflna_test2$HNtype
 #uniflna_test2_wgs$segment <- factor(uniflna_test1$segment)
 
 # Transform for plotting
@@ -198,6 +200,187 @@ p3 <- ggplot(dataset3) + geom_point(aes(lda3.LD1, lda3.LD2, colour = gene), size
 
 p3
 ```
+
+
+ABC type labels 
+
+```{r}
+lda4 <- lda(type ~ ., 
+           uniflna_test2_wgs)
+
+prop.lda4 = lda4$svd^2/sum(lda4$svd^2) 
+
+plda4 <- predict(object = lda4,
+                newdata = uniflna_test2_wgs)
+```
+
+
+
+```{r}
+dataset4 = data.frame(type = uniflna_test2_wgs[,2502],
+                     lda4 = plda4$x)
+```
+
+```{r}
+p4 <- ggplot(dataset4) + geom_point(aes(lda4.LD1, lda4.LD2, colour = type), size=2, alpha=0.2) + 
+  #theme_minimal() +3
+  labs(x = paste("LD1 (", percent(prop.lda4[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda4[2]), ")", sep="")) +
+  scale_color_manual(values=cpal) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+# https://stackoverflow.com/questions/5290003/how-to-set-legend-alpha-with-ggplot2
+
+#ggsave("ABCtype_LDA_plot.png", plot = p4, width = 7, height = 4, dpi = 200)
+
+p4
+```
+
+
+```{r}
+table(uniflna_test2_wgs$type)
+```
+
+
+HN type labels 
+
+```{r}
+lda5 <- lda(HNtype ~ ., 
+           uniflna_test2_wgs)
+
+prop.lda5 = lda5$svd^2/sum(lda5$svd^2) 
+
+plda5 <- predict(object = lda5,
+                newdata = uniflna_test2_wgs)
+```
+
+
+
+```{r}
+dataset5 = data.frame(HNtype = uniflna_test2_wgs[,2503],
+                     lda5 = plda5$x)
+```
+
+```{r}
+p5 <- ggplot(dataset5) + geom_point(aes(lda5.LD1, lda5.LD2, colour = HNtype), size=2, alpha=0.5) + 
+  #theme_minimal() +3
+  labs(x = paste("LD1 (", percent(prop.lda5[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda5[2]), ")", sep="")) + theme(legend.position="none")
+  #scale_color_manual(values=cpal) + 
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))
+
+
+p5
+```
+
+```{r}
+table(uniflna_test2_wgs$HNtype)
+```
+
+
+```{r fig.width=12}
+ggplot(dataset5) + geom_point(aes(lda5.LD1, lda5.LD2, colour = HNtype), size=2, alpha=0.5) + 
+  #theme_minimal() +3
+  labs(x = paste("LD1 (", percent(prop.lda5[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda5[2]), ")", sep=""))
+```
+
+
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+fds5 <- dataset5 %>% group_by(HNtype) %>% filter(n() > 3) %>% filter(HNtype != 'none')
+```
+
+
+
+```{r fig.width=12}
+ggplot(fds5) + geom_point(aes(lda5.LD1, lda5.LD2, colour = HNtype), size=2, alpha=0.4) + 
+  #theme_minimal() +
+  labs(x = paste("LD1 (", percent(prop.lda5[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda5[2]), ")", sep=""))
+```
+
+
+
+
+
+
+```{r}
+ggplot(fds5) + geom_point(aes(lda5.LD1, lda5.LD2, colour = HNtype), size=2, alpha=0.4) + 
+  labs(x = paste("LD1 (", percent(prop.lda5[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda5[2]), ")", sep="")) + 
+  theme(legend.position="none")
+  #scale_color_manual(values=cpal) + 
+  #guides(colour = guide_legend(override.aes = list(alpha = 1)))
+# https://stackoverflow.com/questions/5290003/how-to-set-legend-alpha-with-ggplot2
+
+#ggsave("HNType_LDA_plot.png", width = 7, height = 4, dpi = 200)
+```
+
+
+```{r}
+fds5p20 <- dataset5 %>% group_by(HNtype) %>% filter(n() >= 20) %>% filter(HNtype != 'none')
+```
+
+```{r}
+tempcolors = c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f',
+                '#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928','#4d4d4d')
+ggplot(fds5p20) + geom_point(aes(lda5.LD1, lda5.LD2, colour = HNtype), size=2, alpha=0.4) + 
+  labs(x = paste("LD1 (", percent(prop.lda5[1]), ")", sep=""),
+       y = paste("LD2 (", percent(prop.lda5[2]), ")", sep="")) + 
+  scale_color_manual(values=tempcolors) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+
+# ggsave("HNType_thirty_LDA_plot.png", width = 7, height = 4, dpi = 200)
+```
+
+
+
+### Make an MDS plot
+
+```{r mds}
+fit <- dist(uniflna_test2_cmp_mat)
+fit <- cmdscale(fit)
+x <- fit[, 1]
+y <- fit[, 2]
+plot(fit[ , 1], fit[ , 2], xlab = "Dimension 1", ylab = "Dimension 2")
+```
+
+
+```{r}
+mds_data <- data.frame(x=x, y=y)
+mds_data$gene <- uniflna_test2$gene
+mds_data$type <- uniflna_test2$type
+mds_data$HNtype <- uniflna_test2$HNtype
+```
+
+
+```{r}
+ggplot(mds_data, aes(x,y)) + geom_point(aes(color=gene), size=2, alpha=0.2) +
+  scale_color_manual(values=cpal) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+
+```
+
+```{r}
+ggplot(mds_data, aes(x,y)) + geom_point(aes(color=type), size=2, alpha=0.2) +
+  scale_color_manual(values=cpal) + 
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
